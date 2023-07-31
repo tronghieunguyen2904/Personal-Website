@@ -1,0 +1,23 @@
+.navigate-container{
+    width: 82px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 600px;
+    justify-content: center;
+}
+.navigate-box{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 80px;
+    margin: 16px 0px 8px;
+    padding: 20px 0px;
+    color: #646464;
+    p{
+        font-size: 16px;
+    }
+}
