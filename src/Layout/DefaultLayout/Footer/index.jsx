@@ -8,23 +8,12 @@ import "swiper/css/pagination";
 
 const cx = classNames.bind(styles);
 
-function Profile() {
+function Footer() {
   return (
     <Box className={cx("profile-container")}>
-      <Box className={cx("profile-content")}>
-        <Box className={cx("profile-slide")}>
-            <img src="https://i.imgur.com/hvJKFWF.jpg" alt="hình" />
-        </Box>
-        <Box className={cx("profile-text")}>
-            <h3>Nguyễn Trọng Hiếu</h3>
-            <p>asdasasd</p>
-        </Box>
-        <Box className={cx("profile-cv")}>
-            <h3>Download CV</h3>
-        </Box>
-      </Box>
+      
     </Box>
   );
 }
 
-export default Profile;
+export default Footer;

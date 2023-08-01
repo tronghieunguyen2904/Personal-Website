@@ -5,17 +5,21 @@ const  theme = extendTheme({
     light: {
       palette: {
         primary: {
-          main: '#ff5252',
-        },
-        
+          main: '#0F45FF',
+        },     
+        text:{
+          primary: '#1b1d21'
+        }
       },
     },
     dark: {
       palette: {
         primary: {
-          main: '#000',
+          main: '#0F45FF',
         },
-        
+        text:{
+          primary: '#1b1d21'
+        },
       },
     },
   },
