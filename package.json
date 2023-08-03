@@ -19,6 +19,7 @@
     "classnames": "^2.3.2",
     "firebase": "^10.1.0",
     "normalize.css": "^8.0.1",
+    "pdfjs-dist": "^3.9.179",
     "react": "^18.2.0",
     "react-doc-viewer": "^0.1.5",
     "react-dom": "^18.2.0",

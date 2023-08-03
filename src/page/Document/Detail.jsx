@@ -1,7 +1,7 @@
 import styles from "./Document.module.scss";
 import classNames from "classnames/bind";
 const cx = classNames.bind(styles);
-import { Button, Paper, Typography } from "@mui/material";
+import { Box, Button, Paper, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import FileViewer from "react-file-viewer";
 import { storage } from "./firebase";
@@ -13,6 +13,8 @@ import {
   uploadBytes,
 } from "firebase/storage";
 import { v4 } from "uuid";
+import { PictureAsPdfOutlined } from "@mui/icons-material";
+import { Link } from "react-router-dom";
 
 function DetailCard() {
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -30,10 +32,15 @@ function DetailCard() {
     const fileRef = ref(storage, `ta/${uploadedFile.name + v4()}`);
     uploadBytes(fileRef, uploadedFile).then((snapshot) => {
       getDownloadURL(snapshot.ref).then((url) => {
-        setFileList((prev) => [...prev, url]);
+        setFileList((prev) => [
+          ...prev,
+          { url, contentType: uploadedFile.type },
+        ]);
+        setUploadedFile(null); // Hide the preview after successful upload
       });
     });
   };
+  
 
   const isPDF = (fileType) => {
     return fileType === "application/pdf" || uploadedFile.name.endsWith(".pdf");
@@ -64,30 +71,41 @@ function DetailCard() {
     listAll(imageListRef)
       .then((res) => {
         console.log(res);
-        res.items.forEach((item) => {
-          // Get the download URL
-          getDownloadURL(item)
-            .then((url) => {
-              // Get metadata to retrieve content type
-              getMetadata(item)
-                .then((metadata) => {
-                  const contentType = metadata.contentType;
-                  // Now you have both the URL and the content type, you can do whatever you need with them.
-                  setFileList((prev) => [...prev, { url, contentType }]);
-                })
-                .catch((error) => {
-                  console.error("Error getting metadata:", error);
-                });
-            })
-            .catch((error) => {
-              console.error("Error getting download URL:", error);
-            });
-        });
+        const promises = res.items.map((item) =>
+          Promise.all([
+            getDownloadURL(item),
+            getMetadata(item).then((metadata) => metadata.contentType),
+          ])
+        );
+  
+        Promise.all(promises)
+          .then((urlsAndTypes) => {
+            const fileList = urlsAndTypes.map(([url, contentType]) => ({
+              url,
+              contentType,
+            }));
+            setFileList(fileList);
+          })
+          .catch((error) => {
+            console.error("Error getting download URL or metadata:", error);
+          });
       })
       .catch((error) => {
         console.error("Error listing images:", error);
       });
   }, []);
+  
+  function extractOriginalFileName(url) {
+    // Tìm vị trí của ký tự "%2F" (gạch chéo ngược) đầu tiên trong URL
+    const startIndex = url.indexOf("%2F") + 3;
+
+    // Tìm vị trí của ký tự "_" (gạch ngang) sau vị trí bắt đầu
+    const endIndex = url.indexOf("f", startIndex) + 1;
+
+    // Trích xuất chuỗi tên file từ URL bằng phương thức slice()
+    const fileName = url.slice(startIndex, endIndex);
+    return fileName;
+  }
 
   return (
     <div className={cx("detail-card-container")}>
@@ -106,7 +124,7 @@ function DetailCard() {
                 src={URL.createObjectURL(uploadedFile)}
                 type="application/pdf"
                 width="100%"
-                height="600px"
+                height="300px"
               />
             ) : isWordDocument(uploadedFile.type) ? (
               <FileViewer
@@ -141,8 +159,9 @@ function DetailCard() {
         {previewError && (
           <Typography>Preview not available for this file type.</Typography>
         )}
-        <div>
+        <div  style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap' , margin:'20px 0px'}}>
           {fileList.map((file, index) => {
+            const fileName = extractOriginalFileName(file.url);
             if (!file.contentType) {
               // If contentType is null/undefined, display an error message or handle it as needed
               return <p key={index}>Unsupported file type</p>;
@@ -160,9 +179,43 @@ function DetailCard() {
             } else if (file.contentType === "application/pdf") {
               // If the content type is 'application/pdf', it's a PDF file, so render it using an <iframe> tag
               return (
-                <a href={file.url} target="_blank" rel="noopener noreferrer" key={index}>
-                  View PDF {index + 1}
-                </a>
+                // eslint-disable-next-line react/jsx-key
+                <div>
+                  <Link
+                    to={file.url}
+                    style={{ textDecoration: "none" }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems:'center',
+                        color: "var(--text-color)!important",
+                        width:'250px',
+                        height:'200px',
+                        border:'1px solid #ddd',
+                        borderRadius:'5px',
+                        boxShadow: '#959da5 0px 8px 24px 0px',
+                        margin:'10px'
+                      }}
+                    >
+                      <PictureAsPdfOutlined
+                        style={{ fontSize: "120px", fill: "red" }}
+                      />
+                      <p
+                        style={{
+                          color: "var(--text-color)",
+                          fontWeight: "500",
+                        }}
+                      >
+                        {fileName}
+                      </p>
+                    </Box>
+                  </Link>
+                </div>
               );
             } else {
               // For other types, you can render a default message or handle them according to your requirements.
