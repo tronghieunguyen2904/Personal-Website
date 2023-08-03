@@ -4,8 +4,10 @@ const cx = classNames.bind(styles);
 import { Box, Button, Paper, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import FileViewer from "react-file-viewer";
+import "animate.css/animate.min.css";
 import { storage } from "./firebase";
 import {
+  deleteObject,
   getDownloadURL,
   getMetadata,
   listAll,
@@ -15,11 +17,18 @@ import {
 import { v4 } from "uuid";
 import { PictureAsPdfOutlined } from "@mui/icons-material";
 import { Link } from "react-router-dom";
+import ScrollAnimation from "react-animate-on-scroll";
 
 function DetailCard() {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [previewError, setPreviewError] = useState(false);
   const [fileList, setFileList] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [showDeleteInput, setShowDeleteInput] = useState(false);
+
+  const handleDeleteButtonClick = () => {
+    setShowDeleteInput(!showDeleteInput);
+  };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -40,7 +49,37 @@ function DetailCard() {
       });
     });
   };
-  
+
+  const handleFileSelect = (url) => {
+    // Check if the file is already selected, if so, remove it from the selectedFiles array
+    setSelectedFiles((prev) =>
+      prev.includes(url)
+        ? prev.filter((fileUrl) => fileUrl !== url)
+        : [...prev, url]
+    );
+  };
+
+  const handleDeleteSelected = () => {
+    // Create an array of promises to delete selected files
+    const deletePromises = selectedFiles.map((url) => {
+      const fileRef = ref(storage, url);
+      return deleteObject(fileRef);
+    });
+
+    // Execute all delete promises concurrently using Promise.all()
+    Promise.all(deletePromises)
+      .then(() => {
+        // After successful deletion, update the file list by removing the deleted files
+        setFileList((prev) =>
+          prev.filter((file) => !selectedFiles.includes(file.url))
+        );
+        setSelectedFiles([]); // Clear the selectedFiles array
+        setShowDeleteInput(false);
+      })
+      .catch((error) => {
+        console.error("Error deleting files:", error);
+      });
+  };
 
   const isPDF = (fileType) => {
     return fileType === "application/pdf" || uploadedFile.name.endsWith(".pdf");
@@ -77,7 +116,7 @@ function DetailCard() {
             getMetadata(item).then((metadata) => metadata.contentType),
           ])
         );
-  
+
         Promise.all(promises)
           .then((urlsAndTypes) => {
             const fileList = urlsAndTypes.map(([url, contentType]) => ({
@@ -94,7 +133,7 @@ function DetailCard() {
         console.error("Error listing images:", error);
       });
   }, []);
-  
+
   function extractOriginalFileName(url) {
     // Tìm vị trí của ký tự "%2F" (gạch chéo ngược) đầu tiên trong URL
     const startIndex = url.indexOf("%2F") + 3;
@@ -115,6 +154,25 @@ function DetailCard() {
         <Button variant="contained" color="primary" onClick={handleUpload}>
           Upload File
         </Button>
+        <Button
+          variant="contained"
+          color="error"
+          style={{margin:'0px 20px'}}
+          onClick={handleDeleteButtonClick}
+        >
+          {showDeleteInput ? "Cancel" : "Delete"} {/* Toggle button text */}
+        </Button>
+        {showDeleteInput ? (
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleDeleteSelected}
+          >
+            Confirm Delete
+          </Button>
+        ) : (
+          ""
+        )}
 
         {uploadedFile && (
           <Paper elevation={3}>
@@ -159,7 +217,14 @@ function DetailCard() {
         {previewError && (
           <Typography>Preview not available for this file type.</Typography>
         )}
-        <div  style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap' , margin:'20px 0px'}}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            margin: "20px 0px",
+          }}
+        >
           {fileList.map((file, index) => {
             const fileName = extractOriginalFileName(file.url);
             if (!file.contentType) {
@@ -187,33 +252,49 @@ function DetailCard() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                        alignItems:'center',
-                        color: "var(--text-color)!important",
-                        width:'250px',
-                        height:'200px',
-                        border:'1px solid #ddd',
-                        borderRadius:'5px',
-                        boxShadow: '#959da5 0px 8px 24px 0px',
-                        margin:'10px'
-                      }}
+                    <ScrollAnimation
+                      animateIn="animate__fadeIn"
+                      animateOut="animate__fadeOut"
+                      animateOnce
                     >
-                      <PictureAsPdfOutlined
-                        style={{ fontSize: "120px", fill: "red" }}
-                      />
-                      <p
-                        style={{
-                          color: "var(--text-color)",
-                          fontWeight: "500",
+                      {showDeleteInput ? (
+                        <input
+                          type="checkbox"
+                          checked={selectedFiles.includes(file.url)}
+                          onChange={() => handleFileSelect(file.url)}
+                        />
+                      ) : (
+                        ""
+                      )}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          color: "var(--text-color)!important",
+                          width: "250px",
+                          height: "200px",
+                          border: "1px solid #ddd",
+                          borderRadius: "5px",
+                          boxShadow: "#959da5 0px 8px 24px 0px",
+                          margin: "10px",
                         }}
                       >
-                        {fileName}
-                      </p>
-                    </Box>
+                        <PictureAsPdfOutlined
+                          style={{ fontSize: "120px", fill: "red" }}
+                        />
+                        <p
+                          style={{
+                            color: "var(--text-color)",
+                            fontWeight: "500",
+                          }}
+                        >
+                          {fileName}
+                        </p>
+                      </Box>
+                      
+                    </ScrollAnimation>
                   </Link>
                 </div>
               );

@@ -41,3 +41,33 @@
     justify-content: space-between;
     flex-wrap: wrap;
 }
+
+  /* Định nghĩa hiệu ứng fadeIn */
+@keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  /* Định nghĩa hiệu ứng fadeOut */
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  
+  /* Áp dụng hiệu ứng fadeIn khi phần tử nhập vào khung nhìn */
+  .animate__fadeIn {
+    animation: fadeIn 1s;
+  }
+  
+  /* Áp dụng hiệu ứng fadeOut khi phần tử rời khỏi khung nhìn */
+  .animate__fadeOut {
+    animation: fadeOut 1s;
+  }
