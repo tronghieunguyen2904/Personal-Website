@@ -19,14 +19,20 @@
     text-decoration: none;
     cursor: pointer;
     color: var(--text-color);
+    a{
+        color: var(--text-color);
+    }
 }
+.navigate-box:hover a,
 .navigate-box:hover{
-    color: var(--text-hover);
+    color: var(--text-hover) !important;
 }
+
 .navigate-text{
     font-size: 16px;
         font-weight: 500;
         line-height: 20px;
+        text-decoration: none;
 }
 .navigate-avatar{
     img{

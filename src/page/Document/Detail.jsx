@@ -12,14 +12,16 @@ import {
   getMetadata,
   listAll,
   ref,
+  updateMetadata,
   uploadBytes,
 } from "firebase/storage";
 import { v4 } from "uuid";
-import { PictureAsPdfOutlined } from "@mui/icons-material";
+import { DescriptionOutlined, PictureAsPdfOutlined } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import ScrollAnimation from "react-animate-on-scroll";
 
-function DetailCard() {
+// eslint-disable-next-line react/prop-types
+function DetailCard({ identifier }) {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [previewError, setPreviewError] = useState(false);
   const [fileList, setFileList] = useState([]);
@@ -35,20 +37,43 @@ function DetailCard() {
     setUploadedFile(file);
     setPreviewError(false);
   };
-  const imageListRef = ref(storage, "ta/");
+  const imageListRef = ref(storage, `${identifier}/`);
   const handleUpload = () => {
     if (uploadedFile == null) return;
-    const fileRef = ref(storage, `ta/${uploadedFile.name + v4()}`);
+  
+    // Generate a unique random string using v4()
+    const randomString = v4();
+  
+    // Get the original file name and extension
+    const originalFileName = uploadedFile.name;
+    const extension = originalFileName.split('.').pop();
+  
+    // Combine the original file name with the random string
+    const newFileName = `${originalFileName.replace(/\.[^/.]+$/, '')}-${randomString}.${extension}`;
+  
+    const fileRef = ref(storage, `${identifier}/${newFileName}`);
     uploadBytes(fileRef, uploadedFile).then((snapshot) => {
       getDownloadURL(snapshot.ref).then((url) => {
-        setFileList((prev) => [
-          ...prev,
-          { url, contentType: uploadedFile.type },
-        ]);
-        setUploadedFile(null); // Hide the preview after successful upload
+        // Save the original file name in the Firebase Storage metadata
+        const metadata = {
+          contentType: uploadedFile.type,
+          customMetadata: {
+            originalFileName: originalFileName,
+          },
+        };
+        updateMetadata(fileRef, metadata).then(() => {
+          setFileList((prev) => [
+            ...prev,
+            { url, contentType: uploadedFile.type, originalFileName: originalFileName },
+          ]);
+          setUploadedFile(null); // Hide the preview after successful upload
+        }).catch((error) => {
+          console.error("Error updating metadata:", error);
+        });
       });
     });
   };
+  
 
   const handleFileSelect = (url) => {
     // Check if the file is already selected, if so, remove it from the selectedFiles array
@@ -139,12 +164,41 @@ function DetailCard() {
     const startIndex = url.indexOf("%2F") + 3;
 
     // Tìm vị trí của ký tự "_" (gạch ngang) sau vị trí bắt đầu
-    const endIndex = url.indexOf("f", startIndex) + 1;
+    const endIndex = url.indexOf("df", startIndex) + 2;
 
     // Trích xuất chuỗi tên file từ URL bằng phương thức slice()
-    const fileName = url.slice(startIndex, endIndex);
-    return fileName;
+    const fileNameWithExtension = url.slice(startIndex, endIndex);
+
+    // Tách tên file và phần mở rộng (extension)
+    const fileName = fileNameWithExtension.split('-')[0];
+    const extension = fileNameWithExtension.split('.').pop();
+
+    // Kết hợp lại tên file và phần mở rộng
+    const finalFileName = `${fileName}.${extension}`;
+
+    return finalFileName;
   }
+
+  function extractOriginalFileNameWord(url) {
+    // Tìm vị trí của ký tự "%2F" (gạch chéo ngược) đầu tiên trong URL
+    const startIndex = url.indexOf("%2F") + 3;
+
+    // Tìm vị trí của ký tự "_" (gạch ngang) sau vị trí bắt đầu
+    const endIndex = url.indexOf("x", startIndex) + 1;
+
+    // Trích xuất chuỗi tên file từ URL bằng phương thức slice()
+    const fileNameWithExtension = url.slice(startIndex, endIndex);
+
+    // Tách tên file và phần mở rộng (extension)
+    const fileName = fileNameWithExtension.split('-')[0];
+    const extension = fileNameWithExtension.split('.').pop();
+
+    // Kết hợp lại tên file và phần mở rộng
+    const finalFileName = `${fileName}.${extension}`;
+
+    return finalFileName;
+}
+
 
   return (
     <div className={cx("detail-card-container")}>
@@ -227,6 +281,7 @@ function DetailCard() {
         >
           {fileList.map((file, index) => {
             const fileName = extractOriginalFileName(file.url);
+            const fileNameWord = extractOriginalFileNameWord(file.url);
             if (!file.contentType) {
               // If contentType is null/undefined, display an error message or handle it as needed
               return <p key={index}>Unsupported file type</p>;
@@ -241,7 +296,63 @@ function DetailCard() {
                   Your browser does not support the video tag.
                 </video>
               );
-            } else if (file.contentType === "application/pdf") {
+            } else if(file.contentType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"){
+              return (
+                // eslint-disable-next-line react/jsx-key
+                <div>
+                  <Link
+                    to={file.url}
+                    style={{ textDecoration: "none" }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ScrollAnimation
+                      animateIn="animate__fadeIn"
+                      animateOut="animate__fadeOut"
+                      animateOnce
+                    >
+                      {showDeleteInput ? (
+                        <input
+                          type="checkbox"
+                          checked={selectedFiles.includes(file.url)}
+                          onChange={() => handleFileSelect(file.url)}
+                        />
+                      ) : (
+                        ""
+                      )}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          color: "var(--text-color)!important",
+                          width: "250px",
+                          height: "200px",
+                          border: "1px solid #ddd",
+                          borderRadius: "5px",
+                          boxShadow: "#959da5 0px 8px 24px 0px",
+                          margin: "10px",
+                        }}
+                      >
+                        <DescriptionOutlined
+                          style={{ fontSize: "120px", fill: "blue" }}
+                        />
+                        <p
+                          style={{
+                            color: "var(--text-color)",
+                            fontWeight: "500",
+                          }}
+                        >
+                          {fileNameWord}
+                        </p>
+                      </Box>
+                      
+                    </ScrollAnimation>
+                  </Link>
+                </div>
+              );
+            }else if (file.contentType === "application/pdf") {
               // If the content type is 'application/pdf', it's a PDF file, so render it using an <iframe> tag
               return (
                 // eslint-disable-next-line react/jsx-key
