@@ -8,12 +8,12 @@ import theme from "./theme.js"
 import {Provider} from "react-redux"
 import { createStore , applyMiddleware } from 'redux';
 import createSagaMiddleware from 'redux-saga';
-import reducers from "./Redux/Reducers"
+import rootReducer from './Redux/Reducers/index.js';
 import mySaga from './Redux/Sagas';
 
 const sagaMiddleware = createSagaMiddleware();
 
-const store = createStore(reducers, applyMiddleware(sagaMiddleware));
+const store = createStore(rootReducer, applyMiddleware(sagaMiddleware));
 
 sagaMiddleware.run(mySaga);
 

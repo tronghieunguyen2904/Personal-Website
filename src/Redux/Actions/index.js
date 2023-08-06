@@ -1,18 +1,18 @@
 // Redux/actions.js
-export const FETCH_POSTS_REQUEST = 'FETCH_POSTS_REQUEST';
-export const FETCH_POSTS_SUCCESS = 'FETCH_POSTS_SUCCESS';
-export const FETCH_POSTS_FAILURE = 'FETCH_POSTS_FAILURE';
+export const FETCH_BLOGS_REQUEST = 'FETCH_BLOGS_REQUEST';
+export const FETCH_BLOGS_SUCCESS = 'FETCH_BLOGS_SUCCESS';
+export const FETCH_BLOGS_FAILURE = 'FETCH_BLOGS_FAILURE';
 
 export const fetchPostsRequest = () => ({
-  type: FETCH_POSTS_REQUEST,
+  type: FETCH_BLOGS_REQUEST,
 });
 
 export const fetchPostsSuccess = (posts) => ({
-  type: FETCH_POSTS_SUCCESS,
+  type: FETCH_BLOGS_SUCCESS,
   payload: posts,
 });
 
 export const fetchPostsFailure = (error) => ({
-  type: FETCH_POSTS_FAILURE,
+  type: FETCH_BLOGS_FAILURE,
   payload: error,
 });

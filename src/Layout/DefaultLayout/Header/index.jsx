@@ -50,12 +50,12 @@ function Header() {
             Tài liệu
           </Typography>
         </Link>{" "}
-        <div className={cx("navigate-box")}>
+        <Link to="/blog" className={cx("navigate-box")}>
           <Newspaper style={{ fontSize: "20px", marginBottom: "3px" }} />
           <Typography variant="p" className={cx("navigate-text")}>
             Blog
           </Typography>
-        </div>{" "}
+        </Link>{" "}
         <Link to="https://www.topcv.vn/xem-cv/WlgKAAMHAFcGBA1fAgRcAFJSWV1RUwEEBFAFVwf204" target="_blank" className={cx("navigate-box")}>
           <DocumentScanner style={{ fontSize: "20px", marginBottom: "3px" }} />
           <Typography variant="p" className={cx("navigate-text")}>
