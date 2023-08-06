@@ -19,14 +19,24 @@ import { v4 } from "uuid";
 import { DescriptionOutlined, PictureAsPdfOutlined } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import ScrollAnimation from "react-animate-on-scroll";
+import { useParams } from 'react-router-dom';
+
 
 // eslint-disable-next-line react/prop-types
-function DetailCard({ identifier }) {
+
+function DetailCard() {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [previewError, setPreviewError] = useState(false);
   const [fileList, setFileList] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [showDeleteInput, setShowDeleteInput] = useState(false);
+  const [originalFileNames, setOriginalFileNames] = useState({});
+
+
+  const { id } = useParams();
+
+  // Gán giá trị của id cho identifier
+  const identifier = id;
 
   const handleDeleteButtonClick = () => {
     setShowDeleteInput(!showDeleteInput);
@@ -61,18 +71,31 @@ function DetailCard({ identifier }) {
             originalFileName: originalFileName,
           },
         };
-        updateMetadata(fileRef, metadata).then(() => {
-          setFileList((prev) => [
-            ...prev,
-            { url, contentType: uploadedFile.type, originalFileName: originalFileName },
-          ]);
-          setUploadedFile(null); // Hide the preview after successful upload
-        }).catch((error) => {
-          console.error("Error updating metadata:", error);
-        });
+        updateMetadata(fileRef, metadata)
+          .then(() => {
+            // Get the updated metadata to access the originalFileName
+            getMetadata(fileRef).then((updatedMetadata) => {
+              // Update the file list with the new file, including the originalFileName
+              setFileList((prev) => [
+                ...prev,
+                {
+                  url,
+                  contentType: uploadedFile.type,
+                  originalFileName: updatedMetadata.customMetadata.originalFileName,
+                },
+              ]);
+              setUploadedFile(null); // Hide the preview after successful upload
+            });
+          })
+          .catch((error) => {
+            console.error("Error updating metadata:", error);
+          });
       });
+    }).catch((error) => {
+      console.error("Error uploading file:", error);
     });
   };
+  
   
 
   const handleFileSelect = (url) => {
@@ -159,46 +182,32 @@ function DetailCard({ identifier }) {
       });
   }, []);
 
-  function extractOriginalFileName(url) {
-    // Tìm vị trí của ký tự "%2F" (gạch chéo ngược) đầu tiên trong URL
-    const startIndex = url.indexOf("%2F") + 3;
+const getOriginalFileNameFromFirebase = async (fileURL) => {
+  try {
+    // Get the file reference from the URL
+    const storageRef = ref(storage, fileURL);
+    const metadata = await getMetadata(storageRef);
 
-    // Tìm vị trí của ký tự "_" (gạch ngang) sau vị trí bắt đầu
-    const endIndex = url.indexOf("df", startIndex) + 2;
-
-    // Trích xuất chuỗi tên file từ URL bằng phương thức slice()
-    const fileNameWithExtension = url.slice(startIndex, endIndex);
-
-    // Tách tên file và phần mở rộng (extension)
-    const fileName = fileNameWithExtension.split('-')[0];
-    const extension = fileNameWithExtension.split('.').pop();
-
-    // Kết hợp lại tên file và phần mở rộng
-    const finalFileName = `${fileName}.${extension}`;
-
-    return finalFileName;
+    // Extract and return the originalFileName from the metadata
+    return metadata.customMetadata.originalFileName;
+  } catch (error) {
+    console.error('Error getting metadata:', error);
+    return null;
   }
+};
 
-  function extractOriginalFileNameWord(url) {
-    // Tìm vị trí của ký tự "%2F" (gạch chéo ngược) đầu tiên trong URL
-    const startIndex = url.indexOf("%2F") + 3;
-
-    // Tìm vị trí của ký tự "_" (gạch ngang) sau vị trí bắt đầu
-    const endIndex = url.indexOf("x", startIndex) + 1;
-
-    // Trích xuất chuỗi tên file từ URL bằng phương thức slice()
-    const fileNameWithExtension = url.slice(startIndex, endIndex);
-
-    // Tách tên file và phần mở rộng (extension)
-    const fileName = fileNameWithExtension.split('-')[0];
-    const extension = fileNameWithExtension.split('.').pop();
-
-    // Kết hợp lại tên file và phần mở rộng
-    const finalFileName = `${fileName}.${extension}`;
-
-    return finalFileName;
-}
-
+useEffect(() => {
+  fileList.forEach((file) => {
+    if (!originalFileNames[file.url]) {
+      getOriginalFileNameFromFirebase(file.url).then((originalFileName) => {
+        setOriginalFileNames((prev) => ({
+          ...prev,
+          [file.url]: originalFileName,
+        }));
+      });
+    }
+  });
+}, [fileList, originalFileNames]);
 
   return (
     <div className={cx("detail-card-container")}>
@@ -279,143 +288,142 @@ function DetailCard({ identifier }) {
             margin: "20px 0px",
           }}
         >
-          {fileList.map((file, index) => {
-            const fileName = extractOriginalFileName(file.url);
-            const fileNameWord = extractOriginalFileNameWord(file.url);
-            if (!file.contentType) {
-              // If contentType is null/undefined, display an error message or handle it as needed
-              return <p key={index}>Unsupported file type</p>;
-            } else if (file.contentType.startsWith("image/")) {
-              // If the content type starts with 'image/', it's an image, so render an <img> tag
-              return <img src={file.url} alt="Ảnh" key={index} />;
-            } else if (file.contentType.startsWith("video/")) {
-              // If the content type starts with 'video/', it's a video, so render a <video> tag
-              return (
-                <video controls key={index}>
-                  <source src={file.url} type={file.contentType} />
-                  Your browser does not support the video tag.
-                </video>
-              );
-            } else if(file.contentType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"){
-              return (
-                // eslint-disable-next-line react/jsx-key
-                <div>
-                  <Link
-                    to={file.url}
-                    style={{ textDecoration: "none" }}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ScrollAnimation
-                      animateIn="animate__fadeIn"
-                      animateOut="animate__fadeOut"
-                      animateOnce
+            {fileList.map((file, index) => {
+              let originalFileName = originalFileNames[file.url];
+              if (!file.contentType) {
+                // If contentType is null/undefined, display an error message or handle it as needed
+                return <p key={index}>Unsupported file type</p>;
+              } else if (file.contentType.startsWith("image/")) {
+                // If the content type starts with 'image/', it's an image, so render an <img> tag
+                return <img src={file.url} alt="Ảnh" key={index} />;
+              } else if (file.contentType.startsWith("video/")) {
+                // If the content type starts with 'video/', it's a video, so render a <video> tag
+                return (
+                  <video controls key={index}>
+                    <source src={file.url} type={file.contentType} />
+                    Your browser does not support the video tag.
+                  </video>
+                );
+              } else if(file.contentType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || file.contentType === "application/msword"){
+                return (
+                  // eslint-disable-next-line react/jsx-key
+                  <div>
+                    <Link
+                      to={file.url}
+                      style={{ textDecoration: "none" }}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      {showDeleteInput ? (
-                        <input
-                          type="checkbox"
-                          checked={selectedFiles.includes(file.url)}
-                          onChange={() => handleFileSelect(file.url)}
-                        />
-                      ) : (
-                        ""
-                      )}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          color: "var(--text-color)!important",
-                          width: "250px",
-                          height: "200px",
-                          border: "1px solid #ddd",
-                          borderRadius: "5px",
-                          boxShadow: "#959da5 0px 8px 24px 0px",
-                          margin: "10px",
-                        }}
+                      <ScrollAnimation
+                        animateIn="animate__fadeIn"
+                        animateOut="animate__fadeOut"
+                        animateOnce
                       >
-                        <DescriptionOutlined
-                          style={{ fontSize: "120px", fill: "blue" }}
-                        />
-                        <p
-                          style={{
-                            color: "var(--text-color)",
-                            fontWeight: "500",
+                        {showDeleteInput ? (
+                          <input
+                            type="checkbox"
+                            checked={selectedFiles.includes(file.url)}
+                            onChange={() => handleFileSelect(file.url)}
+                          />
+                        ) : (
+                          ""
+                        )}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            color: "var(--text-color)!important",
+                            width: "250px",
+                            height: "200px",
+                            border: "1px solid #ddd",
+                            borderRadius: "5px",
+                            boxShadow: "#959da5 0px 8px 24px 0px",
+                            margin: "10px",
                           }}
                         >
-                          {fileNameWord}
-                        </p>
-                      </Box>
-                      
-                    </ScrollAnimation>
-                  </Link>
-                </div>
-              );
-            }else if (file.contentType === "application/pdf") {
-              // If the content type is 'application/pdf', it's a PDF file, so render it using an <iframe> tag
-              return (
-                // eslint-disable-next-line react/jsx-key
-                <div>
-                  <Link
-                    to={file.url}
-                    style={{ textDecoration: "none" }}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ScrollAnimation
-                      animateIn="animate__fadeIn"
-                      animateOut="animate__fadeOut"
-                      animateOnce
+                          <DescriptionOutlined
+                            style={{ fontSize: "120px", fill: "blue" }}
+                          />
+                          <p
+                            style={{
+                              color: "var(--text-color)",
+                              fontWeight: "500",
+                            }}
+                          >
+                            {originalFileName}
+                          </p>
+                        </Box>
+                        
+                      </ScrollAnimation>
+                    </Link>
+                  </div>
+                );
+              }else if (file.contentType === "application/pdf") {
+                // If the content type is 'application/pdf', it's a PDF file, so render it using an <iframe> tag
+                return (
+                  // eslint-disable-next-line react/jsx-key
+                  <div>
+                    <Link
+                      to={file.url}
+                      style={{ textDecoration: "none" }}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      {showDeleteInput ? (
-                        <input
-                          type="checkbox"
-                          checked={selectedFiles.includes(file.url)}
-                          onChange={() => handleFileSelect(file.url)}
-                        />
-                      ) : (
-                        ""
-                      )}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          color: "var(--text-color)!important",
-                          width: "250px",
-                          height: "200px",
-                          border: "1px solid #ddd",
-                          borderRadius: "5px",
-                          boxShadow: "#959da5 0px 8px 24px 0px",
-                          margin: "10px",
-                        }}
+                      <ScrollAnimation
+                        animateIn="animate__fadeIn"
+                        animateOut="animate__fadeOut"
+                        animateOnce
                       >
-                        <PictureAsPdfOutlined
-                          style={{ fontSize: "120px", fill: "red" }}
-                        />
-                        <p
-                          style={{
-                            color: "var(--text-color)",
-                            fontWeight: "500",
+                        {showDeleteInput ? (
+                          <input
+                            type="checkbox"
+                            checked={selectedFiles.includes(file.url)}
+                            onChange={() => handleFileSelect(file.url)}
+                          />
+                        ) : (
+                          ""
+                        )}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            color: "var(--text-color)!important",
+                            width: "250px",
+                            height: "200px",
+                            border: "1px solid #ddd",
+                            borderRadius: "5px",
+                            boxShadow: "#959da5 0px 8px 24px 0px",
+                            margin: "10px",
                           }}
                         >
-                          {fileName}
-                        </p>
-                      </Box>
-                      
-                    </ScrollAnimation>
-                  </Link>
-                </div>
-              );
-            } else {
-              // For other types, you can render a default message or handle them according to your requirements.
-              return (
-                <p key={index}>Unsupported file type: {file.contentType}</p>
-              );
-            }
-          })}
+                          <PictureAsPdfOutlined
+                            style={{ fontSize: "120px", fill: "red" }}
+                          />
+                          <p
+                            style={{
+                              color: "var(--text-color)",
+                              fontWeight: "500",
+                            }}
+                          >
+                            {originalFileName}
+                          </p>
+                        </Box>
+                        
+                      </ScrollAnimation>
+                    </Link>
+                  </div>
+                );
+              } else {
+                // For other types, you can render a default message or handle them according to your requirements.
+                return (
+                  <p key={index}>Unsupported file type: {file.contentType}</p>
+                );
+              }
+            })}
         </div>
       </div>
     </div>

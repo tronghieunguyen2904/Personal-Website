@@ -16,11 +16,7 @@ function App() {
                 path={route.path}
                 element={
                   <Layout>
-                    {route.identifier ? (
-                      <Page identifier={route.identifier} />
-                    ) : (
-                      <Page />
-                    )}
+                    <Page />
                   </Layout>
                 }
               />
