@@ -1,6 +1,10 @@
 import  { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchPostsRequest } from '../../Redux/Actions';
+import Card from '../Document/Card';
+import styles from "./Blog.module.scss";
+import classNames from "classnames/bind";
+const cx = classNames.bind(styles);
 
 
 
@@ -24,13 +28,14 @@ function BlogsPage() {
 
   
     return (
-      <div>
+      <div  className={cx("blogs-container")}>
       <h1>Danh sách blogs</h1>
       {blogs.map((blog) => (
-        <div key={blog._id}>
-          <h2>{blog.title}</h2>
-          <p>{blog.author}</p>
-        </div>
+        <Card      key={blog._id}        title={blog.title}
+        des={blog.content}
+        img={blog.attachment}
+        link={blog.router} />
+
       ))}
     </div>
     );
