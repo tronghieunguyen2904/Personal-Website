@@ -27,44 +27,57 @@ function Header() {
   }
 
   return (
-    <div className={cx("navigate-container")}>
-      <div className={cx("navigate-avatar")}>
-        <img src="https://i.imgur.com/qeDkTmY.png" alt="Logo" />
-      </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          width: "682px",
-        }}
-      >
-        <Link to="/" className={cx("navigate-box")}>
-          <Home style={{ fontSize: "20px", marginBottom: "3px" }} />
-          <Typography variant="p" className={cx("navigate-text")}>
-            Trang chủ
-          </Typography>
-        </Link>{" "}
-        <Link to="/document" className={cx("navigate-box")}>
-          <DocumentScanner style={{ fontSize: "20px", marginBottom: "3px" }} />
-          <Typography variant="p" className={cx("navigate-text")}>
-            Tài liệu
-          </Typography>
-        </Link>{" "}
-        <Link to="/blog" className={cx("navigate-box")}>
-          <Newspaper style={{ fontSize: "20px", marginBottom: "3px" }} />
-          <Typography variant="p" className={cx("navigate-text")}>
-            Blog
-          </Typography>
-        </Link>{" "}
-        <Link to="https://www.topcv.vn/xem-cv/WlgKAAMHAFcGBA1fAgRcAFJSWV1RUwEEBFAFVwf204" target="_blank" className={cx("navigate-box")}>
-          <DocumentScanner style={{ fontSize: "20px", marginBottom: "3px" }} />
-          <Typography variant="p" className={cx("navigate-text")}>
-            My CV
-          </Typography>
-        </Link>{" "}
-      </div>
-      <div className={cx("navigate-dark-mode")}>
-        <ModeToggle />
+    <div>
+      <div className={cx("navigate-container")}>
+        <div className={cx("navigate-avatar")}>
+          <img src="https://i.imgur.com/qeDkTmY.png" alt="Logo" />
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            width: "682px",
+          }}
+        >
+          <Link to="/" className={cx("navigate-box")}>
+            <Home style={{ fontSize: "20px", marginBottom: "3px" }} />
+            <Typography variant="p" className={cx("navigate-text")}>
+              Trang chủ
+            </Typography>
+          </Link>{" "}
+          <Link to="/document" className={cx("navigate-box")}>
+            <DocumentScanner
+              style={{ fontSize: "20px", marginBottom: "3px" }}
+            />
+            <Typography variant="p" className={cx("navigate-text")}>
+              Tài liệu
+            </Typography>
+          </Link>{" "}
+          <Link to="/blog" className={cx("navigate-box")}>
+            <Newspaper style={{ fontSize: "20px", marginBottom: "3px" }} />
+            <Typography variant="p" className={cx("navigate-text")}>
+              Blog
+            </Typography>
+          </Link>{" "}
+          <Link
+            to="https://www.topcv.vn/xem-cv/WlgKAAMHAFcGBA1fAgRcAFJSWV1RUwEEBFAFVwf204"
+            target="_blank"
+            className={cx("navigate-box")}
+          >
+            <DocumentScanner
+              style={{ fontSize: "20px", marginBottom: "3px" }}
+            />
+            <Typography variant="p" className={cx("navigate-text")}>
+              My CV
+            </Typography>
+          </Link>{" "}
+        </div>
+        <div className={cx("navigate-dark-mode")}>
+          <ModeToggle />
+        </div>
+        <div className={cx("navigate-dark-mode")}>
+          <ModeToggle />
+        </div>
       </div>
     </div>
   );

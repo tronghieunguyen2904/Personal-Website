@@ -1,5 +1,5 @@
 .blogs-container{
-    padding: 20px 95px;
+    padding: 20px 100px;
 }
 .card-container{
     padding: 10px 0px;
@@ -40,4 +40,65 @@
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
+}
+.blogs-detail-container{
+    max-width: 1300px!important;
+    width: 1291px!important;
+    display: flex!important;
+    padding: 0px!important;
+    margin: 0px!important;
+    .blogs-populated{
+        width: 260px;
+        margin-right: 20px;
+    }
+    .blogs-detail-body{
+        width: 706px;
+    }
+    .blogs-other{
+        width: 325px;
+        margin-left: 20px;
+        span{
+            font-size: 22px;
+            font-weight: 700;
+        }
+    }
+}
+.blogs-populated-heading{
+    width: 100%;
+    height: 40px;
+    background-color: #f4f4f4;
+    font-weight: 700;
+    line-height: 24px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    p{
+        font-size: 16px;
+    }
+}
+.blogs-populated-list{
+    display: flex;
+    flex-direction: column;
+    ol{
+        list-style-type: decimal;
+        padding-inline-start: 24px;
+    }
+    li{
+        font-size: 16px; /* Apply font size to the entire list item */
+        font-weight: 700;
+        margin: 10px 0px;
+        line-height: 24px;
+        span{
+            white-space: nowrap; /* Prevent wrapping */
+            overflow: hidden; /* Hide overflow content */
+            text-overflow: ellipsis;
+            display: block; /* Make the span a block-level element */
+            flex: 1;
+        }
+    }
+    li:first-of-type::marker {
+        /* Customize CSS for the first number */
+        font-size: 17px; /* Example: Larger font size for the first number */
+        font-weight: 900; /* Example: Bolder font weight for the first number */
+      }
 }

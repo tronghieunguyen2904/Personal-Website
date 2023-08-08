@@ -61,7 +61,7 @@ function BlogsPage() {
               <Card
                 key={blog._id}
                 title={blog.title}
-                des={<div dangerouslySetInnerHTML={{ __html: blog.content }} />}
+                des="Tài nguyên cho dev"
                 img={blog.attachment}
                 link={`/blog/${slug}`}
               />
