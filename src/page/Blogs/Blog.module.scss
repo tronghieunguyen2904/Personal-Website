@@ -50,6 +50,7 @@
     .blogs-populated{
         width: 260px;
         margin-right: 20px;
+        
     }
     .blogs-detail-body{
         width: 706px;
@@ -101,4 +102,8 @@
         font-size: 17px; /* Example: Larger font size for the first number */
         font-weight: 900; /* Example: Bolder font weight for the first number */
       }
+
+}
+span.activeContent{
+    color: red!important;
 }

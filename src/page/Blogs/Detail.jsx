@@ -12,6 +12,7 @@ function DetailBlog() {
   const blog = useSelector((state) => state.blogs.blog);
   const [contentWithLi, setContentWithLi] = useState("");
 
+
   useEffect(() => {
     dispatch(fetchDetailBlogRequest(blogId));
   }, [dispatch, blogId]);
@@ -40,12 +41,38 @@ function DetailBlog() {
       setContentWithLi(olElement.outerHTML);
     }
   }, [blog.content]);
+
+  const scrollToHeading = (event) => {
+    if (event.target.tagName === "SPAN") {
+      const headingText = event.target.textContent;
+      var targetElement = Array.from(document.querySelectorAll("h2")).find(
+        (p) => p.textContent === headingText
+      );
+      if (targetElement) {
+        const allLiElements = document.querySelectorAll("li span");
+        allLiElements.forEach((li) => li.classList.remove("activeContent"));
+  
+        // Add the class to the clicked <li> element
+        const clickedLiElement = event.target.closest("li span");
+        clickedLiElement.classList.add("activeContent");
+        console.log(clickedLiElement);
+        // Gọi phương thức scrollIntoView để cuộn đến phần tử cần hiển thị
+        targetElement.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
   return (
     <div className={cx("blogs-container")}>
       <Container className={cx("blogs-detail-container")}>
         <Box className={cx("blogs-populated")}>
-            <Box className={cx("blogs-populated-heading")}><p>Nội dung</p></Box>
-            <Box className={cx("blogs-populated-list")} dangerouslySetInnerHTML={{ __html: contentWithLi }} />
+          <Box className={cx("blogs-populated-heading")}>
+            <p>Nội dung</p>
+          </Box>
+          <Box
+            className={cx("blogs-populated-list")}
+            dangerouslySetInnerHTML={{ __html: contentWithLi }}
+            onClick={scrollToHeading}
+          />
         </Box>
         <Box className={cx("blogs-detail-body")}>
           <h1>{blog.title}</h1>
