@@ -4,6 +4,7 @@ import { fetchDetailBlogRequest } from "../../Redux/Actions";
 import styles from "./Blog.module.scss";
 import classNames from "classnames/bind";
 import { Box, Container } from "@mui/material";
+import CardDetail from "./CardDetail";
 const cx = classNames.bind(styles);
 
 function DetailBlog() {
@@ -11,11 +12,25 @@ function DetailBlog() {
   const blogId = localStorage.getItem("idBlog"); // Lấy blogId từ useParams()
   const blog = useSelector((state) => state.blogs.blog);
   const [contentWithLi, setContentWithLi] = useState("");
+  const [scrollPosition, setScrollPosition] = useState(0);
 
 
   useEffect(() => {
     dispatch(fetchDetailBlogRequest(blogId));
   }, [dispatch, blogId]);
+//----------Điều chỉnh hiệu ứng fixed của nội dung ------------////////
+  const handleScroll = () => {
+    setScrollPosition(window.scrollY);
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+  const isFixed = scrollPosition > 77;
+//---------Lấy content ở body blog làm nội dung------------////
 
   useEffect(() => {
     if (blog.content) {
@@ -41,7 +56,26 @@ function DetailBlog() {
       setContentWithLi(olElement.outerHTML);
     }
   }, [blog.content]);
+  //--------Hiệu ứng scroll-------------------///
+  function smoothScrollTo(element, duration) {
+    const targetPosition = element.getBoundingClientRect().top;
+    const startPosition = window.scrollY || window.pageYOffset;
+    const startTime = performance.now();
 
+    function scrollStep(timestamp) {
+        const currentTime = timestamp - startTime;
+        const progress = Math.min(currentTime / duration, 1);
+
+        window.scrollTo(0, startPosition + targetPosition * progress);
+
+        if (currentTime < duration) {
+            requestAnimationFrame(scrollStep);
+        }
+    }
+
+    requestAnimationFrame(scrollStep);
+}
+//-------------Scroll tới heading h2--------------///
   const scrollToHeading = (event) => {
     if (event.target.tagName === "SPAN") {
       const headingText = event.target.textContent;
@@ -57,7 +91,7 @@ function DetailBlog() {
         clickedLiElement.classList.add("activeContent");
         console.log(clickedLiElement);
         // Gọi phương thức scrollIntoView để cuộn đến phần tử cần hiển thị
-        targetElement.scrollIntoView({ behavior: "smooth" });
+        smoothScrollTo(targetElement,500)
       }
     }
   };
@@ -65,6 +99,7 @@ function DetailBlog() {
     <div className={cx("blogs-container")}>
       <Container className={cx("blogs-detail-container")}>
         <Box className={cx("blogs-populated")}>
+          <Box sx={{position: isFixed ? 'fixed' : 'relative', width: '260px', top: isFixed ? '20px' : 'auto'}}>
           <Box className={cx("blogs-populated-heading")}>
             <p>Nội dung</p>
           </Box>
@@ -73,6 +108,7 @@ function DetailBlog() {
             dangerouslySetInnerHTML={{ __html: contentWithLi }}
             onClick={scrollToHeading}
           />
+          </Box>
         </Box>
         <Box className={cx("blogs-detail-body")}>
           <h1>{blog.title}</h1>
@@ -87,6 +123,15 @@ function DetailBlog() {
         </Box>
         <Box className={cx("blogs-other")}>
           <span>Bài viết liên quan</span>
+          <Container>
+            <CardDetail img={blog.attachment} content={blog.title}/>
+            <CardDetail img={blog.attachment} content={blog.title}/>
+            <CardDetail img={blog.attachment} content={blog.title}/>
+            <CardDetail img={blog.attachment} content={blog.title}/>
+            <CardDetail img={blog.attachment} content={blog.title}/>
+            <CardDetail img={blog.attachment} content={blog.title}/>
+            <CardDetail img={blog.attachment} content={blog.title}/>
+          </Container>
         </Box>
       </Container>
     </div>

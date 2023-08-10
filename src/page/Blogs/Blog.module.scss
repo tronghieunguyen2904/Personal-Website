@@ -50,7 +50,7 @@
     .blogs-populated{
         width: 260px;
         margin-right: 20px;
-        
+        position: relative;
     }
     .blogs-detail-body{
         width: 706px;
@@ -89,6 +89,7 @@
         font-weight: 700;
         margin: 10px 0px;
         line-height: 24px;
+        cursor: pointer;
         span{
             white-space: nowrap; /* Prevent wrapping */
             overflow: hidden; /* Hide overflow content */
@@ -104,6 +105,25 @@
       }
 
 }
+li span:hover{
+    color: var(--text-hover);
+}
 span.activeContent{
     color: red!important;
+}
+.card-detail-container{
+    width: 305px;
+    height: 100px;
+    display: flex;
+    cursor: pointer;
+    img{
+        width: 122px;
+        height: 100%;
+    }
+    p{
+        font-weight: 700;
+    }
+    p:hover{
+        color: var(--text-hover);
+    }
 }
