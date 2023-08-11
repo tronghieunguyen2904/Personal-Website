@@ -6,12 +6,14 @@ import classNames from "classnames/bind";
 import { Box, Container } from "@mui/material";
 import CardDetail from "./CardDetail";
 import { format } from 'date-fns';
+import LoadingOverlay from "../Home/loading";
 const cx = classNames.bind(styles);
 
 function DetailBlog() {
   const dispatch = useDispatch();
   const blogId = localStorage.getItem("idBlog"); // Lấy blogId từ useParams()
   const blog = useSelector((state) => state.blogs.blog);
+  const loading = useSelector((state) => state.blogs.loading);
   const [contentWithLi, setContentWithLi] = useState("");
   const [scrollPosition, setScrollPosition] = useState(0);
 console.log(scrollPosition);
@@ -19,6 +21,8 @@ console.log(scrollPosition);
   useEffect(() => {
     dispatch(fetchDetailBlogRequest(blogId));
   }, [dispatch, blogId]);
+
+
 //----------Điều chỉnh hiệu ứng fixed của nội dung ------------////////
   const handleScroll = () => {
     setScrollPosition(window.scrollY);
@@ -102,6 +106,10 @@ console.log(scrollPosition);
     const apiDate = blog.createdAt;
     formattedDate = format(new Date(apiDate), 'dd/MM/yyyy');
     console.log(formattedDate);
+  }
+    
+  if (loading) {
+    return <div><LoadingOverlay style={{top:"85px"}} textStyle={{top:'65%'}}/></div>;
   }
   return (
     <div className={cx("blogs-container")}>

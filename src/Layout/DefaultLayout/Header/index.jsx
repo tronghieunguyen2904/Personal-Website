@@ -3,6 +3,7 @@ import {
   Home,
   LightMode,
   Newspaper,
+  NotificationsActiveOutlined,
 } from "@mui/icons-material";
 import styles from "./Header.module.scss";
 import classNames from "classnames/bind";
@@ -76,7 +77,7 @@ function Header() {
           <ModeToggle />
         </div>
         <div className={cx("navigate-dark-mode")}>
-          <ModeToggle />
+          <NotificationsActiveOutlined />
         </div>
       </div>
     </div>
