@@ -8,6 +8,7 @@ import { Button } from "@mui/material";
 import ModalAdd from "./ModalAdd";
 import ScrollAnimation from "react-animate-on-scroll";
 import slugify from "slugify";
+import LoadingOverlay from "../Home/loading";
 const cx = classNames.bind(styles);
 
 function BlogsPage() {
@@ -25,7 +26,7 @@ function BlogsPage() {
   }, [dispatch]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div><LoadingOverlay style={{top:"85px"}} textStyle={{top:'65%'}}/></div>;
   }
 
   if (error) {

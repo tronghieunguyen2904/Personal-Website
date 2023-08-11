@@ -3,7 +3,7 @@ import styles from "./Home.module.scss";
 import classNames from "classnames/bind";
 import { ArrowCircleRightOutlined } from "@mui/icons-material";
 import { useEffect, useState } from "react";
-import SyncLoader from "react-spinners/SyncLoader";
+import LoadingOverlay from "./loading";
 const cx = classNames.bind(styles);
 
 function Home() {
@@ -16,9 +16,7 @@ function Home() {
   return (
     <div>
       {isLoading ? (
-        <div className={cx("home-container")}>
-        <SyncLoader className={cx("loading-overlay")} color="var(--text-hover)" size={40}/>
-        </div>
+        <LoadingOverlay />
       ) : (
         <div className={cx("home-container")}>
           {" "}

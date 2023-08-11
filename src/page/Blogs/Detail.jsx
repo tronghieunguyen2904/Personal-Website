@@ -5,6 +5,7 @@ import styles from "./Blog.module.scss";
 import classNames from "classnames/bind";
 import { Box, Container } from "@mui/material";
 import CardDetail from "./CardDetail";
+import { format } from 'date-fns';
 const cx = classNames.bind(styles);
 
 function DetailBlog() {
@@ -13,7 +14,7 @@ function DetailBlog() {
   const blog = useSelector((state) => state.blogs.blog);
   const [contentWithLi, setContentWithLi] = useState("");
   const [scrollPosition, setScrollPosition] = useState(0);
-
+console.log(scrollPosition);
 
   useEffect(() => {
     dispatch(fetchDetailBlogRequest(blogId));
@@ -29,7 +30,7 @@ function DetailBlog() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
-  const isFixed = scrollPosition > 77;
+  const isFixed = scrollPosition > 70;
 //---------Lấy content ở body blog làm nội dung------------////
 
   useEffect(() => {
@@ -95,6 +96,13 @@ function DetailBlog() {
       }
     }
   };
+  let formattedDate = ''; // Define formattedDate with a default value
+
+  if (blog.createdAt) {
+    const apiDate = blog.createdAt;
+    formattedDate = format(new Date(apiDate), 'dd/MM/yyyy');
+    console.log(formattedDate);
+  }
   return (
     <div className={cx("blogs-container")}>
       <Container className={cx("blogs-detail-container")}>
@@ -112,6 +120,10 @@ function DetailBlog() {
         </Box>
         <Box className={cx("blogs-detail-body")}>
           <h1>{blog.title}</h1>
+          <div className={cx("blogs-detail-info")}>
+          <p>Ngày đăng: <span>{formattedDate}</span></p>
+          <p>Tác giả: <span>{blog.author}</span></p>
+          </div>
           <img
             src={blog.attachment}
             alt="HÌnh"

@@ -36,9 +36,10 @@ function ModalAdd({open,handleClose}) {
       };
       const handleEditorChange = (content) => {
         // Xử lý khi nội dung trình soạn thảo thay đổi và lưu nội dung vào state
+        const modifiedContent = content.replace(/<img /g, '<img style="max-width: 100%;" ');
         setData((prevData) => ({
           ...prevData,
-          content: content, // Lưu nội dung trình soạn thảo vào trường content
+          content: modifiedContent, // Lưu nội dung trình soạn thảo vào trường content
         }));
       };
 
