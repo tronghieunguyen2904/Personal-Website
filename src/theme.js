@@ -21,10 +21,10 @@ const  theme = extendTheme({
     dark: {
       palette: {
         primary: {
-          main: '#0F45FF',
+          main: '#000000',
         },
         text:{
-          primary: '#1b1d21'
+          primary: '#ffffff'
         },
       },
     },
