@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchBlogsRequest } from "../../Redux/Actions";
-import Card from "../Document/Card";
+
 import styles from "./Blog.module.scss";
 import classNames from "classnames/bind";
 import { Button } from "@mui/material";
@@ -9,6 +9,7 @@ import ModalAdd from "./ModalAdd";
 import ScrollAnimation from "react-animate-on-scroll";
 import slugify from "slugify";
 import LoadingOverlay from "../Home/loading";
+import Card from "./Card";
 const cx = classNames.bind(styles);
 
 function BlogsPage() {
@@ -46,7 +47,6 @@ function BlogsPage() {
       <ModalAdd open={open} handleClose={handleClose} />
       <div className={cx("blogs-list")}>
         {blogs.map((blog) => {
-          localStorage.setItem('idBlog',blog._id);
           // Tạo slug từ tiêu đề bằng cách sử dụng slugify
           const slug = slugify(blog.title, {
             replacement: "-", // Ký tự sẽ thay thế khoảng trắng và ký tự không hợp lệ
@@ -65,6 +65,7 @@ function BlogsPage() {
                 des="Tài nguyên cho dev"
                 img={blog.attachment}
                 link={`/blog/${slug}`}
+                blogId={blog._id}
               />
             </ScrollAnimation>
           );

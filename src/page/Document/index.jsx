@@ -11,17 +11,13 @@ function Document() {
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-  }, []);
 
   useEffect(() => {
     // Gọi hàm fetchBlogs khi component được render
     fetchDocuments()
       .then((response) => {
         setDocuments(response.data);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error(error);

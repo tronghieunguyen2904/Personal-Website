@@ -5,6 +5,7 @@ import FileBase64 from "react-file-base64"
 import { useDispatch } from "react-redux";
 import { createPostRequest } from "../../Redux/Actions";
 
+
 // eslint-disable-next-line react/prop-types
 function ModalAdd({open,handleClose}) {
     const [data,setData] = useState({
@@ -14,13 +15,11 @@ function ModalAdd({open,handleClose}) {
         author:''
     })
     const dispatch = useDispatch();
-
     const handleAddBlog = () => {
       // Dispatch the createPostRequest action to add a new blog
       dispatch(createPostRequest(data));
       handleClose(); // Close the modal after adding the blog
     }
-    console.log(data);
     const style = {
         position: 'absolute',
         top: '50%',
@@ -61,7 +60,7 @@ function ModalAdd({open,handleClose}) {
             label='Tên bài viết'
             onChange={(e)=>{setData({...data, title: e.target.value})}}
           />
-         <ReactQuillEditor onChange={handleEditorChange}/>
+         <ReactQuillEditor onChange={handleEditorChange} />
          <TextField 
             style={{margin:'40px 0px 20px'}}
             value={data.author}

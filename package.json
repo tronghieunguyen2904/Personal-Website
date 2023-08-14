@@ -22,6 +22,7 @@
     "firebase": "^10.1.0",
     "normalize.css": "^8.0.1",
     "pdfjs-dist": "^3.9.179",
+    "prism-react-renderer": "^2.0.6",
     "quill": "^1.3.7",
     "react": "^18.2.0",
     "react-animate-on-scroll": "^2.1.7",

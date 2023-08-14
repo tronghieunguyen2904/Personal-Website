@@ -1,46 +1,55 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchDetailBlogRequest } from "../../Redux/Actions";
+import { fetchBlogsRequest, fetchDetailBlogRequest } from "../../Redux/Actions";
 import styles from "./Blog.module.scss";
 import classNames from "classnames/bind";
 import { Box, Container } from "@mui/material";
 import CardDetail from "./CardDetail";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 import LoadingOverlay from "../Home/loading";
+import ScrollAnimation from "react-animate-on-scroll";
+import slugify from "slugify";
+import { Link, Navigate } from "react-router-dom";
 const cx = classNames.bind(styles);
 
 function DetailBlog() {
   const dispatch = useDispatch();
-  const blogId = localStorage.getItem("idBlog"); // Lấy blogId từ useParams()
-  const blog = useSelector((state) => state.blogs.blog);
+  const blogId = localStorage.getItem("viewedBlogId"); // Lấy blogId từ useParams()
+  const blogDetail = useSelector((state) => state.blogs.blog);
+  const blogs = useSelector((state) => state.blogs.blogs);
   const loading = useSelector((state) => state.blogs.loading);
   const [contentWithLi, setContentWithLi] = useState("");
   const [scrollPosition, setScrollPosition] = useState(0);
-console.log(scrollPosition);
-
+  console.log(blogId);
+  const handleViewBlogClick = (id,slug) => {
+    localStorage.setItem("viewedBlogId", id);
+    Navigate(`/blog/${slug}`);
+    // Tải lại trang
+    window.location.reload();
+  };
   useEffect(() => {
     dispatch(fetchDetailBlogRequest(blogId));
-  }, [dispatch, blogId]);
+    dispatch(fetchBlogsRequest());
+  }, [dispatch,blogId]);
 
-
-//----------Điều chỉnh hiệu ứng fixed của nội dung ------------////////
+  //----------Điều chỉnh hiệu ứng fixed của nội dung ------------////////
   const handleScroll = () => {
     setScrollPosition(window.scrollY);
   };
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
   const isFixed = scrollPosition > 70;
-//---------Lấy content ở body blog làm nội dung------------////
+  //---------Lấy content ở body blog làm nội dung------------////
 
   useEffect(() => {
-    if (blog.content) {
+    if (blogDetail.content) {
       const parser = new DOMParser();
-      const doc = parser.parseFromString(blog.content, "text/html");
+      const doc = parser.parseFromString(blogDetail.content, "text/html");
 
       const h2Nodes = doc.querySelectorAll("h2");
       const liElements = [];
@@ -60,7 +69,7 @@ console.log(scrollPosition);
 
       setContentWithLi(olElement.outerHTML);
     }
-  }, [blog.content]);
+  }, [blogDetail.content]);
   //--------Hiệu ứng scroll-------------------///
   function smoothScrollTo(element, duration) {
     const targetPosition = element.getBoundingClientRect().top;
@@ -68,19 +77,19 @@ console.log(scrollPosition);
     const startTime = performance.now();
 
     function scrollStep(timestamp) {
-        const currentTime = timestamp - startTime;
-        const progress = Math.min(currentTime / duration, 1);
+      const currentTime = timestamp - startTime;
+      const progress = Math.min(currentTime / duration, 1);
 
-        window.scrollTo(0, startPosition + targetPosition * progress);
+      window.scrollTo(0, startPosition + targetPosition * progress);
 
-        if (currentTime < duration) {
-            requestAnimationFrame(scrollStep);
-        }
+      if (currentTime < duration) {
+        requestAnimationFrame(scrollStep);
+      }
     }
 
     requestAnimationFrame(scrollStep);
-}
-//-------------Scroll tới heading h2--------------///
+  }
+  //-------------Scroll tới heading h2--------------///
   const scrollToHeading = (event) => {
     if (event.target.tagName === "SPAN") {
       const headingText = event.target.textContent;
@@ -90,67 +99,90 @@ console.log(scrollPosition);
       if (targetElement) {
         const allLiElements = document.querySelectorAll("li span");
         allLiElements.forEach((li) => li.classList.remove("activeContent"));
-  
+
         // Add the class to the clicked <li> element
         const clickedLiElement = event.target.closest("li span");
         clickedLiElement.classList.add("activeContent");
-        console.log(clickedLiElement);
         // Gọi phương thức scrollIntoView để cuộn đến phần tử cần hiển thị
-        smoothScrollTo(targetElement,500)
+        smoothScrollTo(targetElement, 500);
       }
     }
   };
-  let formattedDate = ''; // Define formattedDate with a default value
+  let formattedDate = ""; // Define formattedDate with a default value
 
-  if (blog.createdAt) {
-    const apiDate = blog.createdAt;
-    formattedDate = format(new Date(apiDate), 'dd/MM/yyyy');
-    console.log(formattedDate);
+  if (blogDetail.createdAt) {
+    const apiDate = blogDetail.createdAt;
+    formattedDate = format(new Date(apiDate), "dd/MM/yyyy");
   }
-    
+
   if (loading) {
-    return <div><LoadingOverlay style={{top:"85px"}} textStyle={{top:'65%'}}/></div>;
+    return (
+      <div>
+        <LoadingOverlay style={{ top: "85px" }} textStyle={{ top: "65%" }} />
+      </div>
+    );
   }
   return (
     <div className={cx("blogs-container")}>
       <Container className={cx("blogs-detail-container")}>
         <Box className={cx("blogs-populated")}>
-          <Box sx={{position: isFixed ? 'fixed' : 'relative', width: '260px', top: isFixed ? '20px' : 'auto'}}>
-          <Box className={cx("blogs-populated-heading")}>
-            <p>Nội dung</p>
-          </Box>
           <Box
-            className={cx("blogs-populated-list")}
-            dangerouslySetInnerHTML={{ __html: contentWithLi }}
-            onClick={scrollToHeading}
-          />
+            sx={{
+              position: isFixed ? "fixed" : "relative",
+              width: "260px",
+              top: isFixed ? "20px" : "auto",
+            }}
+          >
+            <Box className={cx("blogs-populated-heading")}>
+              <p>Nội dung</p>
+            </Box>
+            <Box
+              className={cx("blogs-populated-list")}
+              dangerouslySetInnerHTML={{ __html: contentWithLi }}
+              onClick={scrollToHeading}
+            />
           </Box>
         </Box>
         <Box className={cx("blogs-detail-body")}>
-          <h1>{blog.title}</h1>
+          <h1>{blogDetail.title}</h1>
           <div className={cx("blogs-detail-info")}>
-          <p>Ngày đăng: <span>{formattedDate}</span></p>
-          <p>Tác giả: <span>{blog.author}</span></p>
+            <p>
+              Ngày đăng: <span>{formattedDate}</span>
+            </p>
+            <p>
+              Tác giả: <span>{blogDetail.author}</span>
+            </p>
           </div>
           <img
-            src={blog.attachment}
+            src={blogDetail.attachment}
             alt="HÌnh"
             style={{ width: "100%", height: "600px" }}
           />
           <p>
-            <div dangerouslySetInnerHTML={{ __html: blog.content }} />
+            <div dangerouslySetInnerHTML={{ __html: blogDetail.content }} />
           </p>
         </Box>
         <Box className={cx("blogs-other")}>
-          <span>Bài viết liên quan</span>
+          <span>Bài viết khác</span>
           <Container>
-            <CardDetail img={blog.attachment} content={blog.title}/>
-            <CardDetail img={blog.attachment} content={blog.title}/>
-            <CardDetail img={blog.attachment} content={blog.title}/>
-            <CardDetail img={blog.attachment} content={blog.title}/>
-            <CardDetail img={blog.attachment} content={blog.title}/>
-            <CardDetail img={blog.attachment} content={blog.title}/>
-            <CardDetail img={blog.attachment} content={blog.title}/>
+            {blogs.map((blog) => {
+              const slug = slugify(blog.title, {
+                replacement: "-", // Ký tự sẽ thay thế khoảng trắng và ký tự không hợp lệ
+                lower: true, // Chuyển đổi các ký tự thành ký tự viết thường
+              });
+              return (
+                <ScrollAnimation
+                  animateIn="animate__fadeIn"
+                  animateOut="animate__fadeOut"
+                  animateOnce
+                  key={blog._id}
+                >
+                  <Link to={`/blog/${slug}`} style={{textDecoration:'none',color:"var(--text-color)"}} onClick={() => handleViewBlogClick(blog._id,slug)}>
+                    <CardDetail img={blog.attachment} content={blog.title} />
+                  </Link>
+                </ScrollAnimation>
+              );
+            })}
           </Container>
         </Box>
       </Container>
