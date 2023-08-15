@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const URL = 'https://node-api-nm00.onrender.com';
+const URL = 'http://localhost:5000';
 console.log(`${URL}/blogs`);
 
 export const fetchBlogs = ()=> axios.get(`${URL}/blogs`);
